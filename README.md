@@ -1,2 +1,2 @@
-# scheduler
+# Every
 Easy scheduler for go
