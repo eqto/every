@@ -38,5 +38,6 @@ func (u Unit) Do(f func(*Context)) *Job {
 	jobLock.Lock()
 	defer jobLock.Unlock()
 	jobs = append(jobs, j)
+	run()
 	return j
 }
