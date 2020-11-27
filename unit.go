@@ -30,8 +30,8 @@ func (u Unit) Hours(h ...uint8) Unit {
 	return u
 }
 
-//Run ..
-func (u Unit) Run(f func(*Context)) *Job {
+//Do ..
+func (u Unit) Do(f func(*Context)) *Job {
 	j := newJob()
 	j.unit = u
 	j.f = f
