@@ -9,8 +9,11 @@ var (
 	tickCallback func(time.Time)
 	jobs         []*Job
 	jobLock      = sync.Mutex{}
-	runLock      = sync.Mutex{}
-	done         chan int
+	wait         = make(chan struct{}, 1)
+	jobWait      = sync.WaitGroup{}
+
+	done     chan int
+	doneLock = sync.Mutex{}
 )
 
 //TickCallback ..
@@ -28,24 +31,32 @@ func Hours(h ...uint8) Unit {
 	return Unit{}.Hours(h...)
 }
 
-func run() {
-	runLock.Lock()
-	defer runLock.Unlock()
+//Wait ..
+func Wait() {
+	<-wait
+}
 
+func run() {
+	doneLock.Lock()
+	defer doneLock.Unlock()
 	if done != nil {
 		return
 	}
+
 	done = make(chan int, 1)
 	go func() {
 		for done != nil {
 			runFunc(done)
 		}
+		jobWait.Wait()
+		wait <- struct{}{}
 	}()
 }
 
-func stop() {
-	runLock.Lock()
-	defer runLock.Unlock()
+//Stop ..
+func Stop() {
+	doneLock.Lock()
+	defer doneLock.Unlock()
 	if done == nil {
 		return
 	}
@@ -64,16 +75,18 @@ func runFunc(cancel <-chan int) {
 		hour := uint8(t.Hour())
 		minute := uint8(t.Minute())
 
+		jobWait.Add(len(jobs))
 		for _, job := range jobs {
 			go func(job *Job) {
+				defer jobWait.Done()
 				if job.enable(hour, minute) {
 					job.f(job.ctx)
 				}
 			}(job)
 		}
 	case <-cancel:
-		runLock.Lock()
-		defer runLock.Unlock()
+		doneLock.Lock()
+		defer doneLock.Unlock()
 		done = nil
 	}
 	if tickCallback != nil {
