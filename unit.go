@@ -31,7 +31,7 @@ func (u Unit) Hours(h ...uint8) Unit {
 }
 
 //Run ..
-func (u Unit) Run(f func(ctx Context) error) *Job {
+func (u Unit) Run(f func(*Context)) *Job {
 	j := newJob()
 	j.unit = u
 	j.f = f

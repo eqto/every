@@ -5,13 +5,18 @@ import (
 	"time"
 
 	"github.com/eqto/command"
-	log "github.com/eqto/go-logger"
 )
 
 var (
-	jobs    []*Job
-	jobLock = sync.Mutex{}
+	tickCallback func(time.Time)
+	jobs         []*Job
+	jobLock      = sync.Mutex{}
 )
+
+//TickCallback ..
+func TickCallback(f func(time.Time)) {
+	tickCallback = f
+}
 
 //Minutes minutes to execute, or no param for every minute
 func Minutes(m ...uint8) Unit {
@@ -27,7 +32,6 @@ func Hours(h ...uint8) Unit {
 func Start() error {
 	command.Add(runFunc, 1)
 	if e := command.Start(); e != nil {
-		log.E(e)
 		return e
 	}
 	command.Wait()
@@ -49,15 +53,13 @@ func runFunc(done <-chan int) {
 		for _, job := range jobs {
 			go func(job *Job) {
 				if job.enable(hour, minute) {
-					ctx := Context{Debug: job.logger.D, Info: job.logger.I, Error: job.logger.E}
-
-					if e := job.f(ctx); e != nil {
-						log.E(e)
-					}
+					job.f(job.ctx)
 				}
 			}(job)
 		}
 	case <-done:
 	}
-	log.D(next.Format(`2006-01-02 15:04:05`))
+	if tickCallback != nil {
+		tickCallback(next)
+	}
 }

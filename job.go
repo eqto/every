@@ -1,20 +1,16 @@
 package every
 
-import (
-	log "github.com/eqto/go-logger"
-)
-
 //Job ..
 type Job struct {
-	unit   Unit
-	f      func(Context) error
-	logger *log.Logger
+	ctx  *Context
+	unit Unit
+	f    func(*Context)
 }
 
-//LogTo ..
-func (j *Job) LogTo(filename string) {
-	j.logger = log.NewDefault()
-	j.logger.SetFile(filename)
+//WithContext ..
+func (j *Job) WithContext(ctx *Context) *Job {
+	j.ctx = ctx
+	return j
 }
 
 func (j *Job) enable(hour, minute uint8) bool {
@@ -52,6 +48,6 @@ func (j *Job) enableMinute(minute uint8) bool {
 
 func newJob() *Job {
 	return &Job{
-		logger: log.Default(),
+		ctx: NewContext(),
 	}
 }
