@@ -90,6 +90,6 @@ func runFunc(cancel <-chan struct{}) {
 		done = nil
 	}
 	if tickCallback != nil {
-		tickCallback(next)
+		go tickCallback(next)
 	}
 }
