@@ -12,7 +12,7 @@ var (
 	wait         = make(chan struct{}, 1)
 	jobWait      = sync.WaitGroup{}
 
-	done     chan int
+	done     chan struct{}
 	doneLock = sync.Mutex{}
 )
 
@@ -31,7 +31,7 @@ func Hours(h ...uint8) Unit {
 	return Unit{}.Hours(h...)
 }
 
-//Wait ..
+//Wait wait for any jobs still running to finish
 func Wait() {
 	<-wait
 }
@@ -43,7 +43,7 @@ func run() {
 		return
 	}
 
-	done = make(chan int, 1)
+	done = make(chan struct{}, 1)
 	go func() {
 		for done != nil {
 			runFunc(done)
@@ -60,10 +60,10 @@ func Stop() {
 	if done == nil {
 		return
 	}
-	done <- 1
+	done <- struct{}{}
 }
 
-func runFunc(cancel <-chan int) {
+func runFunc(cancel <-chan struct{}) {
 	next := time.Unix(time.Now().Unix(), 0)
 	next = next.Add(time.Duration(60-next.Second()) * time.Second)
 
