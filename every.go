@@ -80,6 +80,8 @@ func runFunc(cancel <-chan struct{}) {
 			go func(job *Job) {
 				defer jobWait.Done()
 				if job.enable(hour, minute) {
+					job.ctx.hour = hour
+					job.ctx.minute = minute
 					job.f(job.ctx)
 				}
 			}(job)
