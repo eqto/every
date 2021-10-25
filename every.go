@@ -26,6 +26,7 @@ func Hours(hours ...uint8) Hour {
 	if len(hours) > 0 {
 		hour.unit.hours = hours
 	}
+	hour.unit.minutes = []uint8{0}
 	return hour
 }
 

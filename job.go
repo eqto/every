@@ -16,9 +16,6 @@ func (j *Job) enable(hour, minute uint8) bool {
 }
 
 func (j *Job) enableHour(hour uint8) bool {
-	if j.unit.hours == nil {
-		return false
-	}
 	if len(j.unit.hours) == 0 {
 		return true
 	}
@@ -30,9 +27,6 @@ func (j *Job) enableHour(hour uint8) bool {
 	return false
 }
 func (j *Job) enableMinute(minute uint8) bool {
-	if j.unit.minutes == nil {
-		return false
-	}
 	if len(j.unit.minutes) == 0 {
 		return true
 	}
