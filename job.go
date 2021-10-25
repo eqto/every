@@ -1,13 +1,11 @@
 package every
 
-//Job ..
 type Job struct {
 	ctx  *Context
 	unit Unit
 	f    func(*Context)
 }
 
-//WithContext ..
 func (j *Job) WithContext(ctx *Context) *Job {
 	j.ctx = ctx
 	return j

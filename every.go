@@ -16,19 +16,26 @@ var (
 	doneLock = sync.Mutex{}
 )
 
-//TickCallback ..
 func TickCallback(f func(time.Time)) {
 	tickCallback = f
 }
 
-//Minutes minutes to execute, or no param for every minute
-func Minutes(m ...uint8) Unit {
-	return Unit{}.Minutes(m...)
+//Hours hours to execute, or no param for every hours
+func Hours(hours ...uint8) Hour {
+	hour := Hour{}
+	if len(hours) > 0 {
+		hour.unit.hours = hours
+	}
+	return hour
 }
 
-//Hours ..
-func Hours(h ...uint8) Unit {
-	return Unit{}.Hours(h...)
+//Minutes minutes to execute, or no param for every minutes
+func Minutes(minutes ...uint8) Minute {
+	minute := Minute{}
+	if len(minutes) > 0 {
+		minute.unit.minutes = minutes
+	}
+	return minute
 }
 
 //Wait wait for any jobs still running to finish
@@ -53,7 +60,6 @@ func run() {
 	}()
 }
 
-//Stop ..
 func Stop() {
 	doneLock.Lock()
 	defer doneLock.Unlock()
