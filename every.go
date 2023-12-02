@@ -7,6 +7,7 @@ import (
 
 var (
 	tickCallback func(time.Time)
+	cancelFunc   func(*Context) bool
 	jobs         []*Job
 	jobLock      = sync.Mutex{}
 	wait         = make(chan struct{}, 1)
@@ -20,7 +21,7 @@ func TickCallback(f func(time.Time)) {
 	tickCallback = f
 }
 
-//Hours hours to execute, or no param for every hours
+// Hours hours to execute, or no param for every hours
 func Hours(hours ...uint8) Hour {
 	hour := Hour{}
 	if len(hours) > 0 {
@@ -30,7 +31,7 @@ func Hours(hours ...uint8) Hour {
 	return hour
 }
 
-//Minutes minutes to execute, or no param for every minutes
+// Minutes minutes to execute, or no param for every minutes
 func Minutes(minutes ...uint8) Minute {
 	minute := Minute{}
 	if len(minutes) > 0 {
@@ -39,7 +40,12 @@ func Minutes(minutes ...uint8) Minute {
 	return minute
 }
 
-//Wait wait for any jobs still running to finish
+// cancel will executed before each job run and stop execution when cancel return true
+func Precheck(cancel func(ctx *Context) bool) {
+	cancelFunc = cancel
+}
+
+// Wait wait for any jobs still running to finish
 func Wait() {
 	<-wait
 }
@@ -87,9 +93,11 @@ func runFunc(cancel <-chan struct{}) {
 			go func(job *Job) {
 				defer jobWait.Done()
 				if job.enable(hour, minute) {
-					job.ctx.hour = hour
-					job.ctx.minute = minute
-					job.f(job.ctx)
+					if cancelFunc == nil || (cancelFunc != nil && !cancelFunc(job.ctx)) {
+						job.ctx.hour = hour
+						job.ctx.minute = minute
+						job.f(job.ctx)
+					}
 				}
 			}(job)
 		}
